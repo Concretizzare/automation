@@ -10,9 +10,8 @@ Reference these skills for specialized tasks:
 |-------|----------|---------|
 | **prd** | `.claude/skills/prd/SKILL.md` | Generate PRDs via clarifying questions |
 | **ralph** | `.claude/skills/ralph/SKILL.md` | Convert PRDs to prd.json format |
-| **dev-browser** | `.claude/skills/dev-browser/SKILL.md` | Visual verification of UI changes |
 
-Skills are invoked automatically when acceptance criteria reference them (e.g., "Verify in browser using dev-browser skill").
+These skills are used **before** the Ralph loop for PRD generation and conversion.
 
 ## Your Task
 
@@ -113,7 +112,7 @@ go test ./...
 
 ## Browser Testing (Required for Frontend Stories)
 
-For any story that changes UI or has "Verify in browser" in acceptance criteria, you MUST use the **dev-browser skill** (`.claude/skills/dev-browser/SKILL.md`).
+For any story that changes UI or has "Verify in browser" in acceptance criteria, you MUST perform browser verification.
 
 ### Browser Verification Workflow
 
@@ -151,7 +150,7 @@ mcp__claude-in-chrome__form_input(ref: "ref_X", value: "...", tabId: ...)
 
 If MCP tools are not available, provide clear instructions for the user to verify manually.
 
-A frontend story is NOT complete until browser verification passes. See `.claude/skills/dev-browser/SKILL.md` for full details.
+A frontend story is NOT complete until browser verification passes.
 
 ## Stop Condition
 

@@ -71,11 +71,11 @@ Claude: [Crea prd.json]
 
 | Versione | Path | Skills | Note |
 |----------|------|--------|------|
-| **ralph** (Amp) | `skills/*/SKILL.md` | prd, ralph | Formato Amp |
-| **ralph-wiggum** | `.claude/skills/*/SKILL.md` | prd, ralph | Formato Claude Code |
-| **ralph-hybrid** | `.claude/skills/*/SKILL.md` | prd, ralph | **Copiate da ralph-wiggum** |
+| **ralph** (Amp) | `skills/*/SKILL.md` | prd, ralph | Fonte primaria (Amp) |
+| **ralph-wiggum** | `.claude/skills/*/SKILL.md` | prd, ralph | Copia da ralph |
+| **ralph-hybrid** | `.claude/skills/*/SKILL.md` | prd, ralph | **Copiate da ralph (Amp)** |
 
-**Contenuto identico** - Solo path diverso per compatibilità Claude Code.
+**Contenuto identico** - ralph-hybrid usa direttamente le skills originali da ralph (Amp).
 
 ---
 

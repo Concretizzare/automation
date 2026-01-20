@@ -63,7 +63,7 @@ This document provides an in-depth comparison of ralph-hybrid with its two sourc
 | **Prompt lines** | 109 | 10 | ~150 |
 | **Customization** | Easy (edit file) | Hard (edit script) | Easy (edit file) |
 | **Quality gates** | 4 (typecheck, lint, test, browser) | 2 (typecheck, test) | Customizable |
-| **Browser testing** | ✓ dev-browser skill | ✗ No | ✓ Manual instructions |
+| **Browser testing** | ✓ Manual workflow | ✗ No | ✓ MCP or manual |
 
 **Example from Original Ralph** (prompt.md):
 ```markdown
@@ -328,7 +328,6 @@ done
 **Removed**:
 ```
 ✗ Amp CLI calls
-✗ dev-browser skill (not in Claude Code)
 ✗ Amp-specific error handling
 ```
 
