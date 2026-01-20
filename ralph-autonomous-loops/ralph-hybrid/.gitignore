@@ -1,0 +1,27 @@
+# Ralph working files (generated during runs)
+prd.json
+progress.txt
+.last-branch
+
+# Environment configuration (contains API keys - never commit!)
+.env
+.env.local
+.env.*.local
+
+# Archive is optional to commit
+# Uncomment to exclude from git:
+# archive/
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Editor files
+*.swp
+*.swo
+*~
+.vscode/
+.idea/
+
+# Log files
+*.log

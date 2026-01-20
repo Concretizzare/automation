@@ -1,0 +1,276 @@
+{
+  "project": "Weather API Service",
+  "branchName": "ralph/weather-api-mvp",
+  "description": "Build a RESTful API service that aggregates weather data from multiple sources and provides a unified interface. Includes rate limiting, caching, and API key authentication.",
+  "userStories": [
+    {
+      "id": "US-001",
+      "title": "Database schema for API keys and usage tracking",
+      "description": "As a developer, I want to store API keys and track usage for rate limiting",
+      "acceptanceCriteria": [
+        "Create migration for api_keys table (id, key_hash, user_id, created_at, last_used_at, is_active)",
+        "Create migration for api_usage table (id, api_key_id, endpoint, request_count, date)",
+        "Add indexes on api_keys.key_hash and api_usage.date",
+        "Migration runs successfully",
+        "Typecheck passes"
+      ],
+      "priority": 1,
+      "passes": false,
+      "notes": "Foundation for authentication and rate limiting"
+    },
+    {
+      "id": "US-002",
+      "title": "API key generation endpoint",
+      "description": "As a user, I want to generate an API key so that I can access the service",
+      "acceptanceCriteria": [
+        "POST /api/keys endpoint created",
+        "Generates random API key (32 characters)",
+        "Stores bcrypt hash of key in database",
+        "Returns plaintext key to user (only time they see it)",
+        "Returns 201 with key",
+        "Typecheck passes",
+        "Unit tests pass"
+      ],
+      "priority": 2,
+      "passes": false,
+      "notes": "Users need keys before using other endpoints"
+    },
+    {
+      "id": "US-003",
+      "title": "Authentication middleware",
+      "description": "As a developer, I want middleware to validate API keys on all protected endpoints",
+      "acceptanceCriteria": [
+        "Create authenticateApiKey middleware",
+        "Reads API key from X-API-Key header",
+        "Validates key exists and is active",
+        "Attaches key info to request object",
+        "Returns 401 for missing key",
+        "Returns 403 for invalid/inactive key",
+        "Typecheck passes",
+        "Unit tests pass"
+      ],
+      "priority": 3,
+      "passes": false,
+      "notes": "Depends on US-001 and US-002"
+    },
+    {
+      "id": "US-004",
+      "title": "Rate limiting middleware",
+      "description": "As a service operator, I want to rate limit requests to prevent abuse",
+      "acceptanceCriteria": [
+        "Create rateLimitMiddleware",
+        "Limit to 100 requests per hour per API key",
+        "Track usage in api_usage table",
+        "Returns 429 Too Many Requests when limit exceeded",
+        "Includes Retry-After header",
+        "Resets counter hourly",
+        "Typecheck passes",
+        "Unit tests pass"
+      ],
+      "priority": 4,
+      "passes": false,
+      "notes": "Depends on US-003. Critical for production."
+    },
+    {
+      "id": "US-005",
+      "title": "External weather API client: OpenWeatherMap",
+      "description": "As a developer, I want a client to fetch weather data from OpenWeatherMap",
+      "acceptanceCriteria": [
+        "Create OpenWeatherMapClient class",
+        "Method: getCurrentWeather(lat, lon)",
+        "Returns normalized weather data (temp, humidity, conditions, etc.)",
+        "Handles API errors gracefully",
+        "Includes timeout (5 seconds)",
+        "Typecheck passes",
+        "Unit tests with mocked responses pass"
+      ],
+      "priority": 5,
+      "passes": false,
+      "notes": "First data source integration"
+    },
+    {
+      "id": "US-006",
+      "title": "Caching layer with Redis",
+      "description": "As a service operator, I want to cache weather data to reduce external API calls",
+      "acceptanceCriteria": [
+        "Set up Redis connection",
+        "Create CacheService class",
+        "Methods: get(key), set(key, value, ttl)",
+        "Cache weather data for 10 minutes",
+        "Handle Redis connection failures gracefully (fallback to no cache)",
+        "Typecheck passes",
+        "Unit tests pass"
+      ],
+      "priority": 6,
+      "passes": false,
+      "notes": "Improves performance and reduces external API costs"
+    },
+    {
+      "id": "US-007",
+      "title": "GET /weather/current endpoint",
+      "description": "As a user, I want to get current weather for a location",
+      "acceptanceCriteria": [
+        "GET /api/weather/current?lat=<lat>&lon=<lon> endpoint created",
+        "Requires authentication (API key)",
+        "Applies rate limiting",
+        "Checks cache first",
+        "Fetches from OpenWeatherMap if cache miss",
+        "Stores in cache with 10min TTL",
+        "Returns normalized weather data",
+        "Returns 200 with data",
+        "Returns 400 for missing/invalid lat/lon",
+        "Typecheck passes",
+        "Integration tests pass"
+      ],
+      "priority": 7,
+      "passes": false,
+      "notes": "Depends on US-003, US-004, US-005, US-006. Core endpoint."
+    },
+    {
+      "id": "US-008",
+      "title": "External weather API client: WeatherAPI.com",
+      "description": "As a developer, I want a second data source for redundancy",
+      "acceptanceCriteria": [
+        "Create WeatherAPIClient class",
+        "Method: getCurrentWeather(lat, lon)",
+        "Returns same normalized format as OpenWeatherMap",
+        "Handles API errors gracefully",
+        "Includes timeout (5 seconds)",
+        "Typecheck passes",
+        "Unit tests with mocked responses pass"
+      ],
+      "priority": 8,
+      "passes": false,
+      "notes": "Redundancy in case primary source fails"
+    },
+    {
+      "id": "US-009",
+      "title": "Fallback logic for weather data sources",
+      "description": "As a user, I want the service to work even if one data source is down",
+      "acceptanceCriteria": [
+        "Modify GET /weather/current to try multiple sources",
+        "Try OpenWeatherMap first",
+        "If fails, try WeatherAPI.com",
+        "Return 503 Service Unavailable only if all sources fail",
+        "Log which source was used",
+        "Typecheck passes",
+        "Integration tests pass"
+      ],
+      "priority": 9,
+      "passes": false,
+      "notes": "Depends on US-007 and US-008. Improves reliability."
+    },
+    {
+      "id": "US-010",
+      "title": "GET /weather/forecast endpoint",
+      "description": "As a user, I want to get a 5-day forecast for a location",
+      "acceptanceCriteria": [
+        "GET /api/weather/forecast?lat=<lat>&lon=<lon>&days=<days> endpoint created",
+        "Requires authentication",
+        "Applies rate limiting",
+        "Checks cache first (TTL: 1 hour)",
+        "Fetches from OpenWeatherMap (with fallback)",
+        "Returns array of daily forecasts",
+        "Default days=5, max days=7",
+        "Returns 200 with forecast data",
+        "Typecheck passes",
+        "Integration tests pass"
+      ],
+      "priority": 10,
+      "passes": false,
+      "notes": "Depends on US-009. Second major endpoint."
+    },
+    {
+      "id": "US-011",
+      "title": "Health check endpoint",
+      "description": "As an operator, I want a health check endpoint for monitoring",
+      "acceptanceCriteria": [
+        "GET /health endpoint created",
+        "No authentication required",
+        "Checks database connection",
+        "Checks Redis connection",
+        "Checks external API availability",
+        "Returns 200 if all healthy",
+        "Returns 503 if any dependency unhealthy",
+        "Includes status details in response",
+        "Typecheck passes",
+        "Integration tests pass"
+      ],
+      "priority": 11,
+      "passes": false,
+      "notes": "Important for production monitoring"
+    },
+    {
+      "id": "US-012",
+      "title": "Logging and error tracking",
+      "description": "As an operator, I want structured logging for debugging and monitoring",
+      "acceptanceCriteria": [
+        "Set up Winston logger (or similar)",
+        "Log all API requests (method, path, status, duration)",
+        "Log all external API calls",
+        "Log rate limit violations",
+        "Log authentication failures",
+        "Use structured JSON format",
+        "Different log levels (info, warn, error)",
+        "Logs written to stdout",
+        "Typecheck passes"
+      ],
+      "priority": 12,
+      "passes": false,
+      "notes": "Essential for production debugging"
+    },
+    {
+      "id": "US-013",
+      "title": "OpenAPI/Swagger documentation",
+      "description": "As a user, I want interactive API documentation",
+      "acceptanceCriteria": [
+        "Set up Swagger UI",
+        "Document all endpoints with examples",
+        "Include request/response schemas",
+        "Document authentication (X-API-Key header)",
+        "Document error responses",
+        "Include rate limit information",
+        "Accessible at /api-docs",
+        "Typecheck passes"
+      ],
+      "priority": 13,
+      "passes": false,
+      "notes": "Makes API easier to use"
+    },
+    {
+      "id": "US-014",
+      "title": "Load testing and performance benchmarks",
+      "description": "As an operator, I want to know the service can handle expected load",
+      "acceptanceCriteria": [
+        "Create load test script (k6 or Artillery)",
+        "Test 1000 requests/minute on /weather/current",
+        "Test with and without cache hits",
+        "Measure p50, p95, p99 latency",
+        "Ensure <200ms p95 latency with cache",
+        "Ensure <1s p95 latency without cache",
+        "Document results in docs/PERFORMANCE.md"
+      ],
+      "priority": 14,
+      "passes": false,
+      "notes": "Validates service can handle production load"
+    },
+    {
+      "id": "US-015",
+      "title": "Docker containerization",
+      "description": "As an operator, I want to deploy the service via Docker",
+      "acceptanceCriteria": [
+        "Create Dockerfile",
+        "Multi-stage build for smaller image",
+        "Create docker-compose.yml with API, Postgres, Redis",
+        "Document environment variables in .env.example",
+        "Service starts with docker-compose up",
+        "Health check passes",
+        "Can make authenticated request",
+        "Document deployment in docs/DEPLOYMENT.md"
+      ],
+      "priority": 15,
+      "passes": false,
+      "notes": "Makes deployment easier"
+    }
+  ]
+}

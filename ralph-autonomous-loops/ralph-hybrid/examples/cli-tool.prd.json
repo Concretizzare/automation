@@ -1,0 +1,284 @@
+{
+  "project": "Git Workflow CLI Tool",
+  "branchName": "ralph/cli-mvp",
+  "description": "Build a CLI tool to streamline common git workflows. Features include smart branch creation, PR templates, commit message validation, and workflow automation.",
+  "userStories": [
+    {
+      "id": "US-001",
+      "title": "Project setup and CLI framework",
+      "description": "As a developer, I want a basic CLI structure using a framework",
+      "acceptanceCriteria": [
+        "Initialize project with TypeScript",
+        "Install and configure Commander.js",
+        "Create src/index.ts as entry point",
+        "Add shebang for executable: #!/usr/bin/env node",
+        "Configure package.json with bin field",
+        "Add 'gitflow' as CLI command name",
+        "npm link works locally",
+        "Running 'gitflow --help' shows help text",
+        "Typecheck passes",
+        "Build produces dist/index.js"
+      ],
+      "priority": 1,
+      "passes": false,
+      "notes": "Foundation for the entire CLI"
+    },
+    {
+      "id": "US-002",
+      "title": "Command: gitflow branch <name>",
+      "description": "As a user, I want to create a branch with naming conventions enforced",
+      "acceptanceCriteria": [
+        "Add 'branch' command with <name> argument",
+        "Enforces naming: feature/, bugfix/, hotfix/ prefix",
+        "Auto-adds username to branch name (e.g., feature/john/add-login)",
+        "Creates branch from main (or current branch with --from flag)",
+        "Shows success message",
+        "Shows error if branch already exists",
+        "Typecheck passes",
+        "Unit tests pass"
+      ],
+      "priority": 2,
+      "passes": false,
+      "notes": "Core feature #1"
+    },
+    {
+      "id": "US-003",
+      "title": "Command: gitflow commit",
+      "description": "As a user, I want guided commit message creation following conventions",
+      "acceptanceCriteria": [
+        "Add 'commit' command",
+        "Prompts for commit type (feat, fix, docs, refactor, test, etc.)",
+        "Prompts for scope (optional)",
+        "Prompts for message",
+        "Generates conventional commit format: <type>(<scope>): <message>",
+        "Runs git add -A before commit (or asks user)",
+        "Shows success message with commit hash",
+        "Typecheck passes",
+        "Unit tests pass"
+      ],
+      "priority": 3,
+      "passes": false,
+      "notes": "Core feature #2. Depends on US-001."
+    },
+    {
+      "id": "US-004",
+      "title": "Command: gitflow status",
+      "description": "As a user, I want an enhanced git status with helpful context",
+      "acceptanceCriteria": [
+        "Add 'status' command",
+        "Shows current branch",
+        "Shows number of commits ahead/behind remote",
+        "Shows uncommitted changes count",
+        "Shows untracked files count",
+        "Shows last commit message",
+        "Color-coded output (green=good, yellow=warning, red=error)",
+        "Typecheck passes",
+        "Unit tests pass"
+      ],
+      "priority": 4,
+      "passes": false,
+      "notes": "Nice-to-have enhancement"
+    },
+    {
+      "id": "US-005",
+      "title": "Command: gitflow pr",
+      "description": "As a user, I want to create a PR with auto-filled title and description",
+      "acceptanceCriteria": [
+        "Add 'pr' command",
+        "Detects PR template from .github/pull_request_template.md if exists",
+        "Auto-fills title from branch name (converts feature/add-login to 'Add login')",
+        "Lists commits since branched from main",
+        "Prompts for additional description",
+        "Opens PR using 'gh pr create' (GitHub CLI)",
+        "Shows error if gh CLI not installed",
+        "Shows PR URL on success",
+        "Typecheck passes",
+        "Unit tests pass (with mocked gh CLI)"
+      ],
+      "priority": 5,
+      "passes": false,
+      "notes": "Depends on US-002. Requires GitHub CLI installed."
+    },
+    {
+      "id": "US-006",
+      "title": "Command: gitflow sync",
+      "description": "As a user, I want to sync my branch with main easily",
+      "acceptanceCriteria": [
+        "Add 'sync' command",
+        "Stashes uncommitted changes",
+        "Switches to main",
+        "Pulls latest from origin/main",
+        "Switches back to feature branch",
+        "Rebases feature branch on main",
+        "Pops stashed changes",
+        "Shows summary of changes pulled",
+        "Handles merge conflicts gracefully (stops and shows help)",
+        "Typecheck passes",
+        "Unit tests pass"
+      ],
+      "priority": 6,
+      "passes": false,
+      "notes": "Automates common workflow"
+    },
+    {
+      "id": "US-007",
+      "title": "Command: gitflow cleanup",
+      "description": "As a user, I want to delete merged branches locally",
+      "acceptanceCriteria": [
+        "Add 'cleanup' command",
+        "Lists all local branches that are merged into main",
+        "Excludes main, develop, current branch",
+        "Asks for confirmation before deleting",
+        "Deletes confirmed branches",
+        "Shows summary of deleted branches",
+        "Supports --dry-run flag to preview",
+        "Typecheck passes",
+        "Unit tests pass"
+      ],
+      "priority": 7,
+      "passes": false,
+      "notes": "Housekeeping feature"
+    },
+    {
+      "id": "US-008",
+      "title": "Configuration file support",
+      "description": "As a user, I want to configure default behaviors in a config file",
+      "acceptanceCriteria": [
+        "Support .gitflowrc.json in project root or ~/.gitflowrc.json",
+        "Config options: defaultBranchPrefix, includeUsernameInBranch, autoStageBeforeCommit",
+        "Load config on CLI startup",
+        "Merge with defaults",
+        "Validate config schema",
+        "Show error for invalid config",
+        "Typecheck passes",
+        "Unit tests pass"
+      ],
+      "priority": 8,
+      "passes": false,
+      "notes": "Makes tool customizable"
+    },
+    {
+      "id": "US-009",
+      "title": "Git hooks integration",
+      "description": "As a user, I want to install git hooks for commit message validation",
+      "acceptanceCriteria": [
+        "Add 'gitflow hooks install' command",
+        "Creates .git/hooks/commit-msg",
+        "Hook validates conventional commit format",
+        "Rejects commits with invalid format",
+        "Provides helpful error messages",
+        "Supports --uninstall to remove hooks",
+        "Typecheck passes",
+        "Integration tests pass"
+      ],
+      "priority": 9,
+      "passes": false,
+      "notes": "Enforces conventions automatically"
+    },
+    {
+      "id": "US-010",
+      "title": "Command: gitflow undo",
+      "description": "As a user, I want to undo the last commit or action safely",
+      "acceptanceCriteria": [
+        "Add 'undo' command",
+        "Default: undo last commit (git reset --soft HEAD~1)",
+        "Keeps changes staged",
+        "Supports --hard flag to discard changes",
+        "Asks for confirmation before discarding",
+        "Shows what will be undone",
+        "Typecheck passes",
+        "Unit tests pass"
+      ],
+      "priority": 10,
+      "passes": false,
+      "notes": "Safety feature"
+    },
+    {
+      "id": "US-011",
+      "title": "Error handling and user feedback",
+      "description": "As a user, I want helpful error messages when things go wrong",
+      "acceptanceCriteria": [
+        "Wrap all git commands in try-catch",
+        "Detect common errors (not a git repo, network issues, etc.)",
+        "Provide actionable error messages",
+        "Use colors for errors (red) and warnings (yellow)",
+        "Show stack traces only with --verbose flag",
+        "Exit with appropriate error codes",
+        "Typecheck passes",
+        "Unit tests for error scenarios pass"
+      ],
+      "priority": 11,
+      "passes": false,
+      "notes": "Improves user experience"
+    },
+    {
+      "id": "US-012",
+      "title": "Spinner and progress indicators",
+      "description": "As a user, I want to see progress for long-running operations",
+      "acceptanceCriteria": [
+        "Install ora (or similar spinner library)",
+        "Show spinner for git operations (fetch, pull, push)",
+        "Success/failure icons on completion",
+        "Show operation name (e.g., 'Pulling latest from main...')",
+        "Typecheck passes",
+        "Visual verification in terminal"
+      ],
+      "priority": 12,
+      "passes": false,
+      "notes": "Better UX for slow operations"
+    },
+    {
+      "id": "US-013",
+      "title": "Command autocomplete support",
+      "description": "As a user, I want tab autocomplete for commands and options",
+      "acceptanceCriteria": [
+        "Generate autocomplete scripts for bash/zsh",
+        "Add 'gitflow completion' command",
+        "Outputs completion script for current shell",
+        "Instructions for installing completion",
+        "Test in bash",
+        "Test in zsh",
+        "Document in README"
+      ],
+      "priority": 13,
+      "passes": false,
+      "notes": "Nice-to-have quality-of-life feature"
+    },
+    {
+      "id": "US-014",
+      "title": "Integration tests with real git repo",
+      "description": "As a developer, I want integration tests using actual git operations",
+      "acceptanceCriteria": [
+        "Create test/integration directory",
+        "Helper to create temporary git repos",
+        "Test: Create branch with gitflow branch",
+        "Test: Make commit with gitflow commit",
+        "Test: Sync with gitflow sync",
+        "Test: Cleanup merged branches",
+        "All integration tests pass",
+        "Tests clean up temporary repos"
+      ],
+      "priority": 14,
+      "passes": false,
+      "notes": "Ensures tool works with real git"
+    },
+    {
+      "id": "US-015",
+      "title": "Documentation and examples",
+      "description": "As a user, I want comprehensive documentation",
+      "acceptanceCriteria": [
+        "Create README.md with installation instructions",
+        "Document all commands with examples",
+        "Create docs/EXAMPLES.md with common workflows",
+        "Document configuration options",
+        "Add troubleshooting section",
+        "Include animated GIF demos (optional)",
+        "Add to npm registry with good description",
+        "Add LICENSE file (MIT)"
+      ],
+      "priority": 15,
+      "passes": false,
+      "notes": "Makes tool usable by others"
+    }
+  ]
+}

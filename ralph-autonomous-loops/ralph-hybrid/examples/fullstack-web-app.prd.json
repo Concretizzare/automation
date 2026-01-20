@@ -1,0 +1,282 @@
+{
+  "project": "Task Management Web App",
+  "branchName": "ralph/task-management-mvp",
+  "description": "Build a full-stack task management application with React frontend, Node.js backend, and PostgreSQL database. Users can create, update, delete, and organize tasks into projects.",
+  "userStories": [
+    {
+      "id": "US-001",
+      "title": "Database schema for tasks and projects",
+      "description": "As a developer, I want a database schema so that we can store tasks and projects persistently",
+      "acceptanceCriteria": [
+        "Create migration for projects table (id, name, description, created_at, updated_at)",
+        "Create migration for tasks table (id, project_id, title, description, status, priority, due_date, created_at, updated_at)",
+        "Add foreign key constraint from tasks.project_id to projects.id",
+        "Migration runs successfully",
+        "Rollback migration works",
+        "Add indexes on frequently queried columns"
+      ],
+      "priority": 1,
+      "passes": false,
+      "notes": "Foundation for the entire app. Must be done first."
+    },
+    {
+      "id": "US-002",
+      "title": "API endpoint: Create project",
+      "description": "As a user, I want to create a new project so that I can organize my tasks",
+      "acceptanceCriteria": [
+        "POST /api/projects endpoint created",
+        "Accepts JSON body with name and description",
+        "Validates required fields (name)",
+        "Returns 201 with created project",
+        "Returns 400 for invalid input",
+        "Typecheck passes",
+        "Unit tests pass"
+      ],
+      "priority": 2,
+      "passes": false,
+      "notes": "Depends on US-001"
+    },
+    {
+      "id": "US-003",
+      "title": "API endpoint: List projects",
+      "description": "As a user, I want to see all my projects so that I can choose which one to work on",
+      "acceptanceCriteria": [
+        "GET /api/projects endpoint created",
+        "Returns array of all projects",
+        "Includes project id, name, description, timestamps",
+        "Returns 200 status",
+        "Typecheck passes",
+        "Unit tests pass"
+      ],
+      "priority": 3,
+      "passes": false,
+      "notes": "Depends on US-002"
+    },
+    {
+      "id": "US-004",
+      "title": "API endpoint: Create task",
+      "description": "As a user, I want to create a task within a project so that I can track what needs to be done",
+      "acceptanceCriteria": [
+        "POST /api/projects/:projectId/tasks endpoint created",
+        "Accepts JSON body with title, description, priority, due_date",
+        "Validates project exists (404 if not)",
+        "Validates required fields (title)",
+        "Default status is 'todo'",
+        "Returns 201 with created task",
+        "Returns 400 for invalid input",
+        "Typecheck passes",
+        "Unit tests pass"
+      ],
+      "priority": 4,
+      "passes": false,
+      "notes": "Depends on US-002"
+    },
+    {
+      "id": "US-005",
+      "title": "API endpoint: List tasks for project",
+      "description": "As a user, I want to see all tasks in a project so that I know what work remains",
+      "acceptanceCriteria": [
+        "GET /api/projects/:projectId/tasks endpoint created",
+        "Returns array of tasks for the specified project",
+        "Includes all task fields",
+        "Returns 404 if project doesn't exist",
+        "Returns 200 with empty array if no tasks",
+        "Typecheck passes",
+        "Unit tests pass"
+      ],
+      "priority": 5,
+      "passes": false,
+      "notes": "Depends on US-004"
+    },
+    {
+      "id": "US-006",
+      "title": "API endpoint: Update task status",
+      "description": "As a user, I want to update a task's status so that I can mark it as in-progress or complete",
+      "acceptanceCriteria": [
+        "PATCH /api/tasks/:taskId endpoint created",
+        "Accepts JSON body with status field",
+        "Validates status is one of: 'todo', 'in_progress', 'done'",
+        "Returns updated task",
+        "Returns 404 if task doesn't exist",
+        "Returns 400 for invalid status",
+        "Typecheck passes",
+        "Unit tests pass"
+      ],
+      "priority": 6,
+      "passes": false,
+      "notes": "Depends on US-004"
+    },
+    {
+      "id": "US-007",
+      "title": "Frontend: Project list page",
+      "description": "As a user, I want to see a page listing all my projects so that I can navigate to them",
+      "acceptanceCriteria": [
+        "Create ProjectList component",
+        "Fetch projects from GET /api/projects",
+        "Display project name and description in cards",
+        "Show loading state while fetching",
+        "Show error message if fetch fails",
+        "Click on project navigates to project detail page",
+        "Responsive design works on mobile",
+        "Typecheck passes",
+        "Component tests pass",
+        "Verified in browser"
+      ],
+      "priority": 7,
+      "passes": false,
+      "notes": "Depends on US-003. First UI component."
+    },
+    {
+      "id": "US-008",
+      "title": "Frontend: Create project form",
+      "description": "As a user, I want a form to create new projects so that I can organize my work",
+      "acceptanceCriteria": [
+        "Create CreateProjectForm component",
+        "Form has name and description fields",
+        "Name field is required",
+        "Submit button disabled when name is empty",
+        "POST to /api/projects on submit",
+        "Show success message on creation",
+        "Show error message on failure",
+        "Clear form after successful creation",
+        "Redirect to project list after creation",
+        "Typecheck passes",
+        "Component tests pass",
+        "Verified in browser"
+      ],
+      "priority": 8,
+      "passes": false,
+      "notes": "Depends on US-002 and US-007"
+    },
+    {
+      "id": "US-009",
+      "title": "Frontend: Task list component",
+      "description": "As a user, I want to see all tasks in a project so that I can manage them",
+      "acceptanceCriteria": [
+        "Create TaskList component",
+        "Fetch tasks from GET /api/projects/:projectId/tasks",
+        "Display tasks in a list or kanban board",
+        "Group by status (todo, in_progress, done)",
+        "Show task title, description, priority, due date",
+        "Show loading state",
+        "Show empty state if no tasks",
+        "Typecheck passes",
+        "Component tests pass",
+        "Verified in browser"
+      ],
+      "priority": 9,
+      "passes": false,
+      "notes": "Depends on US-005"
+    },
+    {
+      "id": "US-010",
+      "title": "Frontend: Create task form",
+      "description": "As a user, I want to create tasks in a project so that I can track work items",
+      "acceptanceCriteria": [
+        "Create CreateTaskForm component",
+        "Form has title, description, priority, due_date fields",
+        "Title is required",
+        "Priority is dropdown: low, medium, high",
+        "Due date uses date picker",
+        "POST to /api/projects/:projectId/tasks on submit",
+        "Show success message",
+        "Refresh task list after creation",
+        "Typecheck passes",
+        "Component tests pass",
+        "Verified in browser"
+      ],
+      "priority": 10,
+      "passes": false,
+      "notes": "Depends on US-004 and US-009"
+    },
+    {
+      "id": "US-011",
+      "title": "Frontend: Update task status via drag-and-drop",
+      "description": "As a user, I want to drag tasks between columns to update their status",
+      "acceptanceCriteria": [
+        "Implement drag-and-drop on TaskList component",
+        "Dragging task to different column updates status",
+        "PATCH to /api/tasks/:taskId with new status",
+        "Optimistic UI update (move immediately, rollback on error)",
+        "Show error message if update fails",
+        "Works on desktop (mouse)",
+        "Works on mobile (touch)",
+        "Typecheck passes",
+        "Component tests pass",
+        "Verified in browser"
+      ],
+      "priority": 11,
+      "passes": false,
+      "notes": "Depends on US-006 and US-009"
+    },
+    {
+      "id": "US-012",
+      "title": "API endpoint: Delete task",
+      "description": "As a user, I want to delete tasks that are no longer needed",
+      "acceptanceCriteria": [
+        "DELETE /api/tasks/:taskId endpoint created",
+        "Deletes task from database",
+        "Returns 204 No Content on success",
+        "Returns 404 if task doesn't exist",
+        "Typecheck passes",
+        "Unit tests pass"
+      ],
+      "priority": 12,
+      "passes": false,
+      "notes": "Nice-to-have feature"
+    },
+    {
+      "id": "US-013",
+      "title": "Frontend: Delete task button",
+      "description": "As a user, I want to delete tasks by clicking a button",
+      "acceptanceCriteria": [
+        "Add delete button to each task in TaskList",
+        "Show confirmation dialog before deleting",
+        "DELETE /api/tasks/:taskId on confirm",
+        "Remove task from UI on success",
+        "Show error message on failure",
+        "Typecheck passes",
+        "Component tests pass",
+        "Verified in browser"
+      ],
+      "priority": 13,
+      "passes": false,
+      "notes": "Depends on US-012"
+    },
+    {
+      "id": "US-014",
+      "title": "End-to-end test: Create project and add tasks",
+      "description": "As a developer, I want E2E tests to ensure the full workflow works",
+      "acceptanceCriteria": [
+        "E2E test: Navigate to project list",
+        "E2E test: Create new project",
+        "E2E test: Navigate to project detail",
+        "E2E test: Create 3 tasks",
+        "E2E test: Drag task to in-progress",
+        "E2E test: Drag task to done",
+        "E2E test: Delete a task",
+        "All E2E tests pass",
+        "Tests run in CI"
+      ],
+      "priority": 14,
+      "passes": false,
+      "notes": "Comprehensive E2E test. Run after all features complete."
+    },
+    {
+      "id": "US-015",
+      "title": "Documentation: API reference",
+      "description": "As a developer, I want API documentation so that I can understand all endpoints",
+      "acceptanceCriteria": [
+        "Create docs/API.md",
+        "Document all endpoints with examples",
+        "Include request/response formats",
+        "Document error responses",
+        "Include authentication (if added later)",
+        "Add to README"
+      ],
+      "priority": 15,
+      "passes": false,
+      "notes": "Documentation story. Can run in parallel with other work."
+    }
+  ]
+}
