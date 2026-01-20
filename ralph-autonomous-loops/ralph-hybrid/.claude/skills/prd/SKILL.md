@@ -1,28 +1,20 @@
-# PRD Generator Skill
+---
+name: prd
+description: "Generate a Product Requirements Document (PRD) for a new feature. Use when planning a feature, starting a new project, or when asked to create a PRD. Triggers on: create a prd, write prd for, plan this feature, requirements for, spec out."
+---
 
-Generate Product Requirements Documents (PRDs) through interactive clarifying questions.
+# PRD Generator
 
-## Trigger Phrases
-
-- "create a prd"
-- "write prd for"
-- "plan this feature"
-- "requirements for"
-- "spec out"
-- "/prd"
-
-## Overview
-
-This skill guides you through creating a structured PRD via lettered multiple-choice questions. The output is a markdown document suitable for conversion to `prd.json` for Ralph loop execution.
+Create detailed Product Requirements Documents that are clear, actionable, and suitable for implementation.
 
 ---
 
-## The Workflow
+## The Job
 
-1. **Receive** feature description from user
-2. **Ask** 3-5 essential clarifying questions (lettered A/B/C/D format)
-3. **Generate** structured PRD based on answers
-4. **Save** to `tasks/prd-[feature-name].md`
+1. Receive a feature description from the user
+2. Ask 3-5 essential clarifying questions (with lettered options)
+3. Generate a structured PRD based on answers
+4. Save to `tasks/prd-[feature-name].md`
 
 **Important:** Do NOT start implementing. Just create the PRD.
 
@@ -37,11 +29,9 @@ Ask only critical questions where the initial prompt is ambiguous. Focus on:
 - **Scope/Boundaries:** What should it NOT do?
 - **Success Criteria:** How do we know it's done?
 
-### Question Format (MUST follow this pattern)
+### Format Questions Like This:
 
 ```
-I have a few questions to clarify the requirements:
-
 1. What is the primary goal of this feature?
    A. Improve user onboarding experience
    B. Increase user retention
@@ -55,37 +45,39 @@ I have a few questions to clarify the requirements:
    D. Admin users only
 
 3. What is the scope?
-   A. Minimal viable version (MVP)
+   A. Minimal viable version
    B. Full-featured implementation
    C. Just the backend/API
    D. Just the UI
-
-You can respond with shorthand like "1A, 2C, 3B" for quick answers.
 ```
 
-This format enables rapid iteration - users can respond with "1A, 2C, 3B" instead of writing paragraphs.
+This lets users respond with "1A, 2C, 3B" for quick iteration.
 
 ---
 
 ## Step 2: PRD Structure
 
-After receiving answers, generate the PRD with these sections:
+Generate the PRD with these sections:
 
-### Required Sections
+### 1. Introduction/Overview
 
-#### 1. Introduction/Overview
 Brief description of the feature and the problem it solves.
 
-#### 2. Goals
+### 2. Goals
+
 Specific, measurable objectives (bullet list).
 
-#### 3. User Stories
+### 3. User Stories
+
 Each story needs:
+
 - **Title:** Short descriptive name
 - **Description:** "As a [user], I want [feature] so that [benefit]"
 - **Acceptance Criteria:** Verifiable checklist of what "done" means
 
-**User Story Format:**
+Each story should be small enough to implement in one focused session.
+
+**Format:**
 
 ```markdown
 ### US-001: [Title]
@@ -93,106 +85,72 @@ Each story needs:
 **Description:** As a [user], I want [feature] so that [benefit].
 
 **Acceptance Criteria:**
+
 - [ ] Specific verifiable criterion
 - [ ] Another criterion
 - [ ] Typecheck/lint passes
 - [ ] **[UI stories only]** Verify in browser using dev-browser skill
 ```
 
-#### 4. Functional Requirements
+**Important:**
+
+- Acceptance criteria must be verifiable, not vague. "Works correctly" is bad. "Button shows confirmation dialog before deleting" is good.
+- **For any story with UI changes:** Always include "Verify in browser using dev-browser skill" as acceptance criteria. This ensures visual verification of frontend work.
+
+### 4. Functional Requirements
+
 Numbered list of specific functionalities:
+
 - "FR-1: The system must allow users to..."
 - "FR-2: When a user clicks X, the system must..."
 
 Be explicit and unambiguous.
 
-#### 5. Non-Goals (Out of Scope)
+### 5. Non-Goals (Out of Scope)
+
 What this feature will NOT include. Critical for managing scope.
 
-### Optional Sections
+### 6. Design Considerations (Optional)
 
-#### 6. Design Considerations
 - UI/UX requirements
 - Link to mockups if available
 - Relevant existing components to reuse
 
-#### 7. Technical Considerations
+### 7. Technical Considerations (Optional)
+
 - Known constraints or dependencies
 - Integration points with existing systems
 - Performance requirements
 
-#### 8. Success Metrics
+### 8. Success Metrics
+
 How will success be measured?
+
 - "Reduce time to complete X by 50%"
 - "Increase conversion rate by 10%"
 
-#### 9. Open Questions
+### 9. Open Questions
+
 Remaining questions or areas needing clarification.
 
 ---
 
-## Size Constraints (CRITICAL)
+## Writing for Junior Developers
 
-**Each user story must be completable in ONE context window.**
-
-Ralph spawns a fresh Claude instance per iteration with no memory. If a story is too big, the agent runs out of context before finishing.
-
-### Right-sized stories:
-- Add a database column and migration
-- Add a UI component to an existing page
-- Update a server action with new logic
-- Add a filter dropdown to a list
-
-### Too big (split these):
-- "Build the entire dashboard" → Split into: schema, queries, UI components, filters
-- "Add authentication" → Split into: schema, middleware, login UI, session handling
-- "Refactor the API" → Split into one story per endpoint or pattern
-
-**Rule of thumb:** If you cannot describe the change in 2-3 sentences, it is too big.
-
----
-
-## Acceptance Criteria Rules
-
-### GOOD criteria (verifiable):
-- "Add `status` column to tasks table with default 'pending'"
-- "Filter dropdown has options: All, Active, Completed"
-- "Clicking delete shows confirmation dialog"
-- "Typecheck passes"
-- "Tests pass"
-
-### BAD criteria (vague - NEVER use these):
-- "Works correctly"
-- "User can do X easily"
-- "Good UX"
-- "Handles edge cases"
-
-### Mandatory Criteria:
-
-1. **Every story:** Include "Typecheck passes" (or equivalent for your language)
-2. **Stories with tests:** Include "Tests pass"
-3. **UI stories:** Include "Verify in browser using dev-browser skill"
-
----
-
-## Writing for AI Agents
-
-The PRD will be executed by Ralph (an AI agent). Therefore:
+The PRD reader may be a junior developer or AI agent. Therefore:
 
 - Be explicit and unambiguous
 - Avoid jargon or explain it
 - Provide enough detail to understand purpose and core logic
 - Number requirements for easy reference
 - Use concrete examples where helpful
-- Specify file locations when known
-- Reference existing patterns in the codebase
 
 ---
 
 ## Output
 
 - **Format:** Markdown (`.md`)
-- **Location:** `tasks/` directory
+- **Location:** `tasks/`
 - **Filename:** `prd-[feature-name].md` (kebab-case)
 
 ---
@@ -204,7 +162,7 @@ The PRD will be executed by Ralph (an AI agent). Therefore:
 
 ## Introduction
 
-Add priority levels to tasks so users can focus on what matters most. Tasks can be marked as high, medium, or low priority, with visual indicators and filtering.
+Add priority levels to tasks so users can focus on what matters most. Tasks can be marked as high, medium, or low priority, with visual indicators and filtering to help users manage their workload effectively.
 
 ## Goals
 
@@ -220,6 +178,7 @@ Add priority levels to tasks so users can focus on what matters most. Tasks can 
 **Description:** As a developer, I need to store task priority so it persists across sessions.
 
 **Acceptance Criteria:**
+
 - [ ] Add priority column to tasks table: 'high' | 'medium' | 'low' (default 'medium')
 - [ ] Generate and run migration successfully
 - [ ] Typecheck passes
@@ -229,6 +188,7 @@ Add priority levels to tasks so users can focus on what matters most. Tasks can 
 **Description:** As a user, I want to see task priority at a glance so I know what needs attention first.
 
 **Acceptance Criteria:**
+
 - [ ] Each task card shows colored priority badge (red=high, yellow=medium, gray=low)
 - [ ] Priority visible without hovering or clicking
 - [ ] Typecheck passes
@@ -239,6 +199,7 @@ Add priority levels to tasks so users can focus on what matters most. Tasks can 
 **Description:** As a user, I want to change a task's priority when editing it.
 
 **Acceptance Criteria:**
+
 - [ ] Priority dropdown in task edit modal
 - [ ] Shows current priority as selected
 - [ ] Saves immediately on selection change
@@ -247,9 +208,10 @@ Add priority levels to tasks so users can focus on what matters most. Tasks can 
 
 ### US-004: Filter tasks by priority
 
-**Description:** As a user, I want to filter the task list to see only high-priority items.
+**Description:** As a user, I want to filter the task list to see only high-priority items when I'm focused.
 
 **Acceptance Criteria:**
+
 - [ ] Filter dropdown with options: All | High | Medium | Low
 - [ ] Filter persists in URL params
 - [ ] Empty state message when no tasks match filter
@@ -290,28 +252,13 @@ Add priority levels to tasks so users can focus on what matters most. Tasks can 
 
 ---
 
-## Checklist Before Saving
+## Checklist
 
-Before saving the PRD, verify:
+Before saving the PRD:
 
-- [ ] Asked clarifying questions with lettered options (A/B/C/D)
-- [ ] Incorporated user's answers into the document
-- [ ] User stories are small enough for one context window
-- [ ] Acceptance criteria are verifiable (not vague)
-- [ ] UI stories include browser verification criterion
+- [ ] Asked clarifying questions with lettered options
+- [ ] Incorporated user's answers
+- [ ] User stories are small and specific
 - [ ] Functional requirements are numbered and unambiguous
 - [ ] Non-goals section defines clear boundaries
-- [ ] File saved to `tasks/prd-[feature-name].md`
-
----
-
-## Integration with Ralph Loop
-
-After creating the PRD:
-
-1. User can invoke the `ralph` skill to convert it to `prd.json`
-2. The `ralph.sh` script will then execute each story in priority order
-3. Each story gets its own fresh Claude instance
-4. Progress is tracked in `progress.txt`
-
-See the `ralph` skill for JSON conversion details.
+- [ ] Saved to `tasks/prd-[feature-name].md`

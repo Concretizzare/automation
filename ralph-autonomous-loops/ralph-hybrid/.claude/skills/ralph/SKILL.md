@@ -1,28 +1,17 @@
-# Ralph PRD Converter Skill
+---
+name: ralph
+description: "Convert PRDs to prd.json format for the Ralph autonomous agent system. Use when you have an existing PRD and need to convert it to Ralph's JSON format. Triggers on: convert this prd, turn this into ralph format, create prd.json from this, ralph json."
+---
 
-Convert markdown PRDs to `prd.json` format for Ralph loop execution.
+# Ralph PRD Converter
 
-## Trigger Phrases
-
-- "convert this prd"
-- "turn this into ralph format"
-- "create prd.json from this"
-- "ralph json"
-- "/ralph-convert"
-
-## Overview
-
-This skill takes an existing PRD (markdown file or text) and converts it to the JSON format that Ralph uses for autonomous execution. It validates story sizes, acceptance criteria, and dependencies.
+Converts existing PRDs to the prd.json format that Ralph uses for autonomous execution.
 
 ---
 
-## The Workflow
+## The Job
 
-1. **Read** the source PRD (markdown file or pasted text)
-2. **Validate** stories for size, dependencies, and acceptance criteria
-3. **Convert** to `prd.json` format
-4. **Archive** previous run if different feature
-5. **Save** to project's ralph directory
+Take a PRD (markdown file or text) and convert it to `prd.json` in your ralph directory.
 
 ---
 
@@ -33,21 +22,12 @@ This skill takes an existing PRD (markdown file or text) and converts it to the 
   "project": "[Project Name]",
   "branchName": "ralph/[feature-name-kebab-case]",
   "description": "[Feature description from PRD title/intro]",
-  "qualityChecks": {
-    "typecheck": "npm run typecheck",
-    "lint": "npm run lint",
-    "test": "npm run test"
-  },
   "userStories": [
     {
       "id": "US-001",
       "title": "[Story title]",
       "description": "As a [user], I want [feature] so that [benefit]",
-      "acceptanceCriteria": [
-        "Criterion 1",
-        "Criterion 2",
-        "Typecheck passes"
-      ],
+      "acceptanceCriteria": ["Criterion 1", "Criterion 2", "Typecheck passes"],
       "priority": 1,
       "passes": false,
       "notes": ""
@@ -58,162 +38,109 @@ This skill takes an existing PRD (markdown file or text) and converts it to the 
 
 ---
 
-## Validation Rules (MUST enforce)
-
-### 1. Story Size Validation
+## Story Size: The Number One Rule
 
 **Each story must be completable in ONE Ralph iteration (one context window).**
 
-Reject or flag stories that are too large:
+Ralph spawns a fresh Amp instance per iteration with no memory of previous work. If a story is too big, the LLM runs out of context before finishing and produces broken code.
 
-**Right-sized (ACCEPT):**
+### Right-sized stories:
+
 - Add a database column and migration
 - Add a UI component to an existing page
 - Update a server action with new logic
 - Add a filter dropdown to a list
 
-**Too big (SPLIT or REJECT):**
-- "Build the entire dashboard"
-- "Add authentication"
-- "Refactor the API"
-- Any story that requires more than 2-3 sentences to describe
+### Too big (split these):
 
-**If story is too big:**
-1. Warn the user
-2. Suggest how to split it
-3. Do NOT include it as-is
+- "Build the entire dashboard" - Split into: schema, queries, UI components, filters
+- "Add authentication" - Split into: schema, middleware, login UI, session handling
+- "Refactor the API" - Split into one story per endpoint or pattern
 
-### 2. Acceptance Criteria Validation
+**Rule of thumb:** If you cannot describe the change in 2-3 sentences, it is too big.
 
-Each criterion must be VERIFIABLE - something Ralph can CHECK.
+---
 
-**Valid criteria:**
-- "Add `status` column to tasks table with default 'pending'"
-- "Filter dropdown has options: All, Active, Completed"
-- "Clicking delete shows confirmation dialog"
-- "Typecheck passes"
-- "Tests pass"
-- "Verify in browser using dev-browser skill"
+## Story Ordering: Dependencies First
 
-**Invalid criteria (REJECT or REWRITE):**
-- "Works correctly"
-- "User can do X easily"
-- "Good UX"
-- "Handles edge cases"
-- "Is performant"
-
-**If vague criteria found:**
-1. Flag to user
-2. Suggest specific replacement
-3. Do NOT include vague criteria
-
-### 3. Dependency Validation
-
-Stories execute in priority order. Earlier stories must NOT depend on later ones.
+Stories execute in priority order. Earlier stories must not depend on later ones.
 
 **Correct order:**
+
 1. Schema/database changes (migrations)
 2. Server actions / backend logic
 3. UI components that use the backend
 4. Dashboard/summary views that aggregate data
 
-**If dependency cycle detected:**
-1. Warn the user
-2. Suggest correct ordering
-3. Reorder in output
+**Wrong order:**
 
-### 4. Branch Name Validation
-
-Branch names must be:
-- Prefixed with `ralph/`
-- kebab-case
-- Descriptive but concise
-
-Examples:
-- `ralph/task-priority`
-- `ralph/user-notifications`
-- `ralph/status-filter`
-
-### 5. Required Criteria
-
-Every story MUST include:
-- "Typecheck passes" (or equivalent)
-
-UI stories MUST also include:
-- "Verify in browser using dev-browser skill"
-
-Add these automatically if missing.
+1. UI component (depends on schema that does not exist yet)
+2. Schema change
 
 ---
 
-## Quality Checks Detection
+## Acceptance Criteria: Must Be Verifiable
 
-Detect project type and set appropriate quality checks:
+Each criterion must be something Ralph can CHECK, not something vague.
 
-### TypeScript/JavaScript (Next.js, React, Node)
-```json
-{
-  "typecheck": "npm run typecheck",
-  "lint": "npm run lint",
-  "test": "npm run test"
-}
+### Good criteria (verifiable):
+
+- "Add `status` column to tasks table with default 'pending'"
+- "Filter dropdown has options: All, Active, Completed"
+- "Clicking delete shows confirmation dialog"
+- "Typecheck passes"
+- "Tests pass"
+
+### Bad criteria (vague):
+
+- "Works correctly"
+- "User can do X easily"
+- "Good UX"
+- "Handles edge cases"
+
+### Always include as final criterion:
+
+```
+"Typecheck passes"
 ```
 
-### Python
-```json
-{
-  "typecheck": "mypy .",
-  "lint": "ruff check .",
-  "test": "pytest"
-}
+For stories with testable logic, also include:
+
+```
+"Tests pass"
 ```
 
-### Go
-```json
-{
-  "typecheck": "go build ./...",
-  "lint": "golangci-lint run",
-  "test": "go test ./..."
-}
+### For stories that change UI, also include:
+
+```
+"Verify in browser using dev-browser skill"
 ```
 
-### Rust
-```json
-{
-  "typecheck": "cargo check",
-  "lint": "cargo clippy",
-  "test": "cargo test"
-}
-```
-
-If unsure, check for:
-- `package.json` → Node/TypeScript project
-- `requirements.txt` or `pyproject.toml` → Python project
-- `go.mod` → Go project
-- `Cargo.toml` → Rust project
+Frontend stories are NOT complete until visually verified. Ralph will use the dev-browser skill to navigate to the page, interact with the UI, and confirm changes work.
 
 ---
 
 ## Conversion Rules
 
 1. **Each user story becomes one JSON entry**
-2. **IDs:** Sequential (US-001, US-002, etc.)
-3. **Priority:** Based on dependency order, then document order
-4. **All stories:** `passes: false` and empty `notes` initially
-5. **branchName:** Derive from feature name, kebab-case, prefixed with `ralph/`
-6. **Always add:** "Typecheck passes" to every story if not present
-7. **UI stories:** Add "Verify in browser using dev-browser skill" if not present
+2. **IDs**: Sequential (US-001, US-002, etc.)
+3. **Priority**: Based on dependency order, then document order
+4. **All stories**: `passes: false` and empty `notes`
+5. **branchName**: Derive from feature name, kebab-case, prefixed with `ralph/`
+6. **Always add**: "Typecheck passes" to every story's acceptance criteria
 
 ---
 
-## Splitting Large Stories
+## Splitting Large PRDs
 
 If a PRD has big features, split them:
 
 **Original:**
+
 > "Add user notification system"
 
 **Split into:**
+
 1. US-001: Add notifications table to database
 2. US-002: Create notification service for sending notifications
 3. US-003: Add notification bell icon to header
@@ -225,33 +152,7 @@ Each is one focused change that can be completed and verified independently.
 
 ---
 
-## Archiving Previous Runs
-
-**Before writing a new prd.json, check if there is an existing one from a different feature:**
-
-1. Read the current `prd.json` if it exists
-2. Check if `branchName` differs from the new feature's branch name
-3. If different AND `progress.txt` has content beyond the header:
-   - Create archive folder: `archive/YYYY-MM-DD-feature-name/`
-   - Copy current `prd.json` and `progress.txt` to archive
-   - Reset `progress.txt` with fresh header
-
-**Archive command:**
-```bash
-# Create archive directory
-mkdir -p archive/$(date +%Y-%m-%d)-[old-feature-name]
-
-# Move files
-cp prd.json archive/$(date +%Y-%m-%d)-[old-feature-name]/
-cp progress.txt archive/$(date +%Y-%m-%d)-[old-feature-name]/
-
-# Reset progress.txt
-echo "# Progress Log\n\n## Codebase Patterns\n\n---\n" > progress.txt
-```
-
----
-
-## Example Conversion
+## Example
 
 **Input PRD:**
 
@@ -261,6 +162,7 @@ echo "# Progress Log\n\n## Codebase Patterns\n\n---\n" > progress.txt
 Add ability to mark tasks with different statuses.
 
 ## Requirements
+
 - Toggle between pending/in-progress/done on task list
 - Filter list by status
 - Show status badge on each task
@@ -274,11 +176,6 @@ Add ability to mark tasks with different statuses.
   "project": "TaskApp",
   "branchName": "ralph/task-status",
   "description": "Task Status Feature - Track task progress with status indicators",
-  "qualityChecks": {
-    "typecheck": "npm run typecheck",
-    "lint": "npm run lint",
-    "test": "npm run test"
-  },
   "userStories": [
     {
       "id": "US-001",
@@ -342,32 +239,18 @@ Add ability to mark tasks with different statuses.
 
 ---
 
-## Validation Report
+## Archiving Previous Runs
 
-After conversion, provide a validation report:
+**Before writing a new prd.json, check if there is an existing one from a different feature:**
 
-```
-## Validation Report
+1. Read the current `prd.json` if it exists
+2. Check if `branchName` differs from the new feature's branch name
+3. If different AND `progress.txt` has content beyond the header:
+   - Create archive folder: `archive/YYYY-MM-DD-feature-name/`
+   - Copy current `prd.json` and `progress.txt` to archive
+   - Reset `progress.txt` with fresh header
 
-Stories: 4
-Branch: ralph/task-status
-
-Validation:
-- [x] All stories are appropriately sized
-- [x] Dependencies are correctly ordered
-- [x] All criteria are verifiable
-- [x] Typecheck criterion added to all stories
-- [x] Browser verification added to UI stories (US-002, US-003, US-004)
-- [x] No dependency cycles detected
-- [x] Branch name follows conventions
-
-Quality Checks Detected: TypeScript/Next.js project
-- typecheck: npm run typecheck
-- lint: npm run lint
-- test: npm run test
-
-Ready for Ralph execution!
-```
+**The ralph.sh script handles this automatically** when you run it, but if you are manually updating prd.json between runs, archive first.
 
 ---
 
@@ -375,27 +258,10 @@ Ready for Ralph execution!
 
 Before writing prd.json, verify:
 
-- [ ] **Previous run archived** (if prd.json exists with different branchName)
+- [ ] **Previous run archived** (if prd.json exists with different branchName, archive it first)
 - [ ] Each story is completable in one iteration (small enough)
-- [ ] Stories are ordered by dependency (schema → backend → UI)
+- [ ] Stories are ordered by dependency (schema to backend to UI)
 - [ ] Every story has "Typecheck passes" as criterion
-- [ ] UI stories have "Verify in browser using dev-browser skill"
+- [ ] UI stories have "Verify in browser using dev-browser skill" as criterion
 - [ ] Acceptance criteria are verifiable (not vague)
 - [ ] No story depends on a later story
-- [ ] Branch name is kebab-case with `ralph/` prefix
-- [ ] Quality checks match project type
-
----
-
-## Integration with Ralph Loop
-
-After creating `prd.json`:
-
-1. Run `./ralph.sh` to start the autonomous loop
-2. Each iteration picks the highest priority story with `passes: false`
-3. Claude implements the story and runs quality checks
-4. If checks pass, story is marked `passes: true`
-5. Progress is logged to `progress.txt`
-6. Loop continues until all stories pass
-
-See `prompt.md` for the full agent instructions.
